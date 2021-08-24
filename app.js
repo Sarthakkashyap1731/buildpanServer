@@ -1,9 +1,13 @@
 var createError = require('http-errors')
 var express = require('express')
+// const fileUpload = require('express-fileupload')
 var path = require('path')
 var cookieParser = require('cookie-parser')
 var logger = require('morgan')
 var bodyParser = require('body-parser')
+const multer = require('multer')
+// const upload = multer({ dest: 'uploads/' })
+const fileUpload = require('express-fileupload')
 
 var indexRouter = require('./routes/index')
 var usersRouter = require('./routes/users')
@@ -13,15 +17,26 @@ var urlencodedParser = bodyParser.urlencoded({ extended: false })
 
 var app = express()
 
+app.use(
+  fileUpload({
+    createParentPath: true,
+  })
+)
+// app.use(fileUpload())
+app.use(express.static('uploads'))
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'))
 app.set('view engine', 'jade')
 
 app.use(logger('dev'))
-app.use(express.urlencoded({ extended: false }))
-app.use(bodyParser.urlencoded({ extended: false }))
 app.use(express.json())
-app.use(bodyParser.json())
+// app.use('/uploads', express.static('./uploads'))
+
+app.use(express.urlencoded({ extended: true }))
+// app.use(bodyParser.urlencoded({ extended: false }))
+// app.use(express.json())
+// app.use(bodyParser.json())
 app.use(cookieParser())
 app.use(express.static(path.join(__dirname, 'public')))
 
