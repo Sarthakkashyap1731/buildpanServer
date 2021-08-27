@@ -26,14 +26,14 @@ router.post('/signUp', async (req, res) => {
     let userId = shortid.generate()
     let newUserName = userName + '-' + userId
 
-    let userData = await userModel.find()
-    console.log('userDatauserData', userData.email)
-    // if (userData.email) {
-    //   res.json({
-    //     success: false,
-    //     message: 'This email is used, Please use another',
-    //   })
-    // } else {
+    let userData = await userModel.findOne({ email })
+    console.log('userDatauserData', userData)
+    if (userData) {
+      res.json({
+        success: false,
+        message: 'This email is used, Please use another',
+      })
+    }
     await userModel.create({
       userId: newUserName,
       email: email,
@@ -45,7 +45,6 @@ router.post('/signUp', async (req, res) => {
       looseMatches: looseMatches,
     })
     res.json({ success: true, message: 'SignUp successfully' })
-    // }
   } catch (err) {
     res.json({ success: false, message: err.message })
   }
@@ -188,7 +187,7 @@ router.post('/upload-avatar', async (req, res) => {
     } else {
       //Use the name of the input field (i.e. "avatar") to retrieve the uploaded file
       let avatar = req.files.avatar
-      let { userName, userId } = req.body
+      let { userName, email } = req.body
 
       //Use the mv() method to place the file in upload directory (i.e. "uploads")
       avatar.mv('./uploads/' + avatar.name)
@@ -196,7 +195,7 @@ router.post('/upload-avatar', async (req, res) => {
       await userModel.updateOne(
         {
           userName,
-          userId,
+          email,
         },
         {
           profilePicture: `http://3.6.156.104:3080/${avatar.name}`,
@@ -227,6 +226,25 @@ router.post('/singup/guest', async (req, res) => {
       userId: userId,
     })
     res.json({ success: true, message: 'SignUp successfully' })
+  } catch (err) {
+    res.json({ success: false, message: err.message })
+  }
+})
+
+router.post('/updateCoins', async (req, res) => {
+  console.log('Inside updateCoins')
+  try {
+    let { userName, email, coins } = req.body
+    await userModel.updateOne(
+      {
+        userName: userName,
+        email: email,
+      },
+      {
+        coins: coins,
+      }
+    )
+    res.json({ success: true, message: 'Coins Updated' })
   } catch (err) {
     res.json({ success: false, message: err.message })
   }
