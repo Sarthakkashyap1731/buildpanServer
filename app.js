@@ -23,7 +23,10 @@ app.use(
   })
 )
 // app.use(fileUpload())
-app.use(express.static('uploads'))
+// app.use('/uploads', express.static(path.join(__dirname, 'public')))
+
+// app.use(express.static('uploads'))
+// app.use('/static', express.static('public'))
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'))
@@ -38,7 +41,8 @@ app.use(express.urlencoded({ extended: true }))
 // app.use(express.json())
 // app.use(bodyParser.json())
 app.use(cookieParser())
-app.use(express.static(path.join(__dirname, 'public')))
+app.use(express.static(path.join(__dirname, 'uploads')))
+console.log('path.joinpath.join', path.join(__dirname, 'uploads'))
 
 app.use('/', indexRouter)
 app.use('/users', urlencodedParser, usersRouter)

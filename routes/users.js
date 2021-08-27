@@ -26,6 +26,14 @@ router.post('/signUp', async (req, res) => {
     let userId = shortid.generate()
     let newUserName = userName + '-' + userId
 
+    var result = ''
+    var characters = '0123456789'
+    var charactersLength = characters.length
+    for (var i = 0; i < 8; i++) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength))
+    }
+    console.log('resultresult ===', result)
+    let newResult = userName + '_' + result
     let userData = await userModel.findOne({ email })
     console.log('userDatauserData', userData)
     if (userData) {
@@ -35,7 +43,7 @@ router.post('/signUp', async (req, res) => {
       })
     }
     await userModel.create({
-      userId: newUserName,
+      userId: newResult,
       email: email,
       profilePicture: profilePicture,
       userName: userName,
@@ -52,6 +60,7 @@ router.post('/signUp', async (req, res) => {
 
 router.post('/loginUser', async (req, res) => {
   console.log('Inside loginUser')
+  console.log('dirname', __dirname)
   try {
     let { userName, userId } = req.body
     if (userName && userId) {
@@ -185,13 +194,10 @@ router.post('/upload-avatar', async (req, res) => {
         message: 'No file uploaded',
       })
     } else {
-      //Use the name of the input field (i.e. "avatar") to retrieve the uploaded file
       let avatar = req.files.avatar
       let { userName, email } = req.body
 
-      //Use the mv() method to place the file in upload directory (i.e. "uploads")
       avatar.mv('./uploads/' + avatar.name)
-      // console.log('avataravataravatar', avatar)
       await userModel.updateOne(
         {
           userName,
@@ -201,7 +207,6 @@ router.post('/upload-avatar', async (req, res) => {
           profilePicture: `http://3.6.156.104:3080/${avatar.name}`,
         }
       )
-      //send response
       res.send({
         status: true,
         message: 'File is uploaded',
