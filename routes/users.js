@@ -2,12 +2,8 @@ var express = require('express')
 var router = express.Router()
 const shortid = require('shortid')
 var multer = require('multer')
-// var upload = multer({ dest: '/uploads/' })
+var uniqid = require('uniqid')
 
-// const upload = multer({ dest: 'uploads/' })
-// const _ = require('lodash')
-
-// import userModel from '../models/userModel'
 const userModel = require('../models/userModel')
 
 /* GET users listing. */
@@ -21,15 +17,26 @@ router.post('/signUp', async (req, res) => {
     let {
       profilePicture,
       userName,
+      email,
       userScore,
       totalMatches,
       winMatches,
       looseMatches,
     } = req.body
     let userId = shortid.generate()
-    console.log('userIduserIduserIduserId', userId)
+    let newUserName = userName + '-' + userId
+
+    let userData = await userModel.find()
+    console.log('userDatauserData', userData.email)
+    // if (userData.email) {
+    //   res.json({
+    //     success: false,
+    //     message: 'This email is used, Please use another',
+    //   })
+    // } else {
     await userModel.create({
-      userId: userId,
+      userId: newUserName,
+      email: email,
       profilePicture: profilePicture,
       userName: userName,
       userScore: userScore,
@@ -38,6 +45,7 @@ router.post('/signUp', async (req, res) => {
       looseMatches: looseMatches,
     })
     res.json({ success: true, message: 'SignUp successfully' })
+    // }
   } catch (err) {
     res.json({ success: false, message: err.message })
   }
@@ -207,6 +215,20 @@ router.post('/upload-avatar', async (req, res) => {
     }
   } catch (err) {
     res.status(500).send(err)
+  }
+})
+
+router.post('/singup/guest', async (req, res) => {
+  console.log('Inside guest')
+  try {
+    let userId = uniqid('Guest-')
+    console.log('userIduserIduserIduserId', userId)
+    await userModel.create({
+      userId: userId,
+    })
+    res.json({ success: true, message: 'SignUp successfully' })
+  } catch (err) {
+    res.json({ success: false, message: err.message })
   }
 })
 

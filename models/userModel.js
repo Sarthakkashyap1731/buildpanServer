@@ -7,6 +7,7 @@ const userSchema = new schema(
     profilePicture: { type: String, default: '' },
     userName: { type: String, default: '' },
     userId: { type: String, default: '' },
+    email: { type: String, default: '' },
     userScore: { type: Number, default: 0 },
     totalMatches: { type: Number, default: 0 },
     winMatches: { type: Number, default: 0 },
