@@ -2,12 +2,8 @@ var express = require('express')
 var router = express.Router()
 const shortid = require('shortid')
 var multer = require('multer')
-// var upload = multer({ dest: '/uploads/' })
+var uniqid = require('uniqid')
 
-// const upload = multer({ dest: 'uploads/' })
-// const _ = require('lodash')
-
-// import userModel from '../models/userModel'
 const userModel = require('../models/userModel')
 
 /* GET users listing. */
@@ -21,15 +17,26 @@ router.post('/signUp', async (req, res) => {
     let {
       profilePicture,
       userName,
+      email,
       userScore,
       totalMatches,
       winMatches,
       looseMatches,
     } = req.body
     let userId = shortid.generate()
-    console.log('userIduserIduserIduserId', userId)
+    let newUserName = userName + '-' + userId
+
+    let userData = await userModel.findOne({ email })
+    console.log('userDatauserData', userData)
+    if (userData) {
+      res.json({
+        success: false,
+        message: 'This email is used, Please use another',
+      })
+    }
     await userModel.create({
-      userId: userId,
+      userId: newUserName,
+      email: email,
       profilePicture: profilePicture,
       userName: userName,
       userScore: userScore,
@@ -180,7 +187,7 @@ router.post('/upload-avatar', async (req, res) => {
     } else {
       //Use the name of the input field (i.e. "avatar") to retrieve the uploaded file
       let avatar = req.files.avatar
-      let { userName, userId } = req.body
+      let { userName, email } = req.body
 
       //Use the mv() method to place the file in upload directory (i.e. "uploads")
       avatar.mv('./uploads/' + avatar.name)
@@ -188,7 +195,7 @@ router.post('/upload-avatar', async (req, res) => {
       await userModel.updateOne(
         {
           userName,
-          userId,
+          email,
         },
         {
           profilePicture: `http://3.6.156.104:3080/${avatar.name}`,
@@ -207,6 +214,39 @@ router.post('/upload-avatar', async (req, res) => {
     }
   } catch (err) {
     res.status(500).send(err)
+  }
+})
+
+router.post('/singup/guest', async (req, res) => {
+  console.log('Inside guest')
+  try {
+    let userId = uniqid('Guest-')
+    console.log('userIduserIduserIduserId', userId)
+    await userModel.create({
+      userId: userId,
+    })
+    res.json({ success: true, message: 'SignUp successfully' })
+  } catch (err) {
+    res.json({ success: false, message: err.message })
+  }
+})
+
+router.post('/updateCoins', async (req, res) => {
+  console.log('Inside updateCoins')
+  try {
+    let { userName, email, coins } = req.body
+    await userModel.updateOne(
+      {
+        userName: userName,
+        email: email,
+      },
+      {
+        coins: coins,
+      }
+    )
+    res.json({ success: true, message: 'Coins Updated' })
+  } catch (err) {
+    res.json({ success: false, message: err.message })
   }
 })
 
