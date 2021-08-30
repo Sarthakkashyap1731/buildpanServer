@@ -195,13 +195,13 @@ router.post('/upload-avatar', async (req, res) => {
       })
     } else {
       let avatar = req.files.avatar
-      let { userName, email } = req.body
+      let { userName, userId } = req.body
 
       avatar.mv('./uploads/' + avatar.name)
       await userModel.updateOne(
         {
           userName,
-          email,
+          userId,
         },
         {
           profilePicture: `http://3.6.156.104:3080/${avatar.name}`,
@@ -225,10 +225,19 @@ router.post('/upload-avatar', async (req, res) => {
 router.post('/singup/guest', async (req, res) => {
   console.log('Inside guest')
   try {
-    let userId = uniqid('Guest-')
-    console.log('userIduserIduserIduserId', userId)
+    var result = ''
+    var characters = '0123456789'
+    var charactersLength = characters.length
+    for (var i = 0; i < 8; i++) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength))
+    }
+    console.log('resultresult ===', result)
+    let newResult = 'Guest' + '_' + result
+    console.log('newResultnewResult ===', newResult)
+    let userName = req.body.userName
     await userModel.create({
-      userId: userId,
+      userName: userName,
+      userId: newResult,
     })
     res.json({ success: true, message: 'SignUp successfully' })
   } catch (err) {
@@ -239,11 +248,11 @@ router.post('/singup/guest', async (req, res) => {
 router.post('/updateCoins', async (req, res) => {
   console.log('Inside updateCoins')
   try {
-    let { userName, email, coins } = req.body
+    let { userName, userId, coins } = req.body
     await userModel.updateOne(
       {
         userName: userName,
-        email: email,
+        userId: userId,
       },
       {
         coins: coins,
