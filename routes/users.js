@@ -62,11 +62,11 @@ router.post('/loginUser', async (req, res) => {
   console.log('Inside loginUser')
   console.log('dirname', __dirname)
   try {
-    let { userName, userId } = req.body
-    if (userName && userId) {
+    let { userName, email } = req.body
+    if (userName && email) {
       let userData = await userModel.findOne({
         userName: userName,
-        userId: userId,
+        email: email,
       })
       res.json({
         success: true,
@@ -232,6 +232,7 @@ router.post('/singup/guest', async (req, res) => {
       result += characters.charAt(Math.floor(Math.random() * charactersLength))
     }
     console.log('resultresult ===', result)
+    console.log(req.headers)
     let newResult = 'Guest' + '_' + result
     console.log('newResultnewResult ===', newResult)
     let userName = req.body.userName
@@ -261,6 +262,47 @@ router.post('/updateCoins', async (req, res) => {
     res.json({ success: true, message: 'Coins Updated' })
   } catch (err) {
     res.json({ success: false, message: err.message })
+  }
+})
+
+router.post('/updateUserData', async (req, res) => {
+  console.log('Inside update user')
+  try {
+    let { id, userScore, totalMatches, winMatches, looseMatches, car, track } =
+      req.body
+    let obj = {}
+    if (userScore) {
+      obj.userScore = req.body.userScore
+    }
+    if (totalMatches) {
+      obj.totalMatches = req.body.totalMatches
+    }
+    if (winMatches) {
+      obj.winMatches = req.body.winMatches
+    }
+    if (looseMatches) {
+      obj.looseMatches = req.body.looseMatches
+    }
+    if (car) {
+      obj.car = req.body.car
+    }
+    if (track) {
+      obj.track = req.body.track
+    }
+    console.log(' obj====', obj)
+
+    let data = await userModel.updateOne(
+      {
+        _id: id,
+      },
+      obj
+    )
+    res.json({ success: true, message: 'Updated successfully', data: data })
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    })
   }
 })
 
