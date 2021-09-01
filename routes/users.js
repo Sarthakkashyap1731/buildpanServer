@@ -5,6 +5,7 @@ var multer = require('multer')
 var uniqid = require('uniqid')
 var jwt = require('jsonwebtoken')
 let config = require('../config/config')
+const path = require('path')
 
 const userModel = require('../models/userModel')
 
@@ -74,6 +75,33 @@ router.post('/search/user', async (req, res) => {
     let email = req.body.email
     let userData = await userModel.findOne({ email: email })
     console.log('userDatauserData', userData)
+    // var token = req.headers.token
+    // if (!token)
+    //   return res
+    //     .status(401)
+    //     .send({ auth: false, message: 'No token provided.' })
+
+    // jwt.verify(token, config.secret, function (err, decoded) {
+    //   if (err)
+    //     return res
+    //       .status(500)
+    //       .send({ auth: false, message: 'Failed to authenticate token.' })
+    //   console.log('decodeddecodeddecoded', decoded)
+    //   userData.findById(
+    //     {
+    //       _id: decoded.id,
+    //     },
+    //     // { password: 0 }, // projection
+    //     function (err, user) {
+    //       if (err)
+    //         return res.status(500).send('There was a problem finding the user.')
+    //       if (!user) return res.status(404).send('No user found.')
+
+    //       // res.status(200).send(user); Comment this out!
+    //       next(user) // add this line
+    //     }
+    //   )
+    // })
     res.json({ success: true, message: 'User Fetched', data: userData })
   } catch (err) {
     res.status(500).json({
@@ -95,26 +123,27 @@ router.post('/loginUser', async (req, res) => {
       })
 
       //req.header token
+      // var token = req.headers['x-access-token']
+      // var token = req.headers.token
+      // if (!token)
+      //   return res
+      //     .status(401)
+      //     .send({ auth: false, message: 'No token provided.' })
 
-      var token = req.headers['x-access-token']
-      if (!token)
-        return res
-          .status(401)
-          .send({ auth: false, message: 'No token provided.' })
-
-      jwt.verify(token, config.secret, function (err, decoded) {
-        if (err)
-          return res
-            .status(500)
-            .send({ auth: false, message: 'Failed to authenticate token.' })
-        console.log('decodeddecoded', decoded)
-        res.status(200).send(decoded)
-      })
+      // jwt.verify(token, config.secret, function (err, decoded) {
+      //   if (err)
+      //     return res
+      //       .status(500)
+      //       .send({ auth: false, message: 'Failed to authenticate token.' })
+      //   console.log('decodeddecoded', decoded)
+      //   // res.status(200).send(decoded)
       res.json({
         success: true,
         message: 'User Login successfully',
         data: userData,
+        decoded: decoded,
       })
+      // })
     } else {
       res.json({
         success: false,
@@ -238,18 +267,24 @@ router.post('/upload-avatar', async (req, res) => {
     } else {
       let avatar = req.files.avatar
       let { userName, userId } = req.body
-
-      avatar.mv('./uploads/' + avatar.name)
-      await userModel.updateOne(
-        {
-          userName,
-          userId,
-        },
-        {
-          profilePicture: `http://3.6.156.104:3080/${avatar.name}`,
-        }
-      )
-      res.send({
+      avatar.mv(path.join(__dirname, '../uploads', avatar.name), (err) => {
+        console.log('err', err)
+      })
+      console.log('path', path.join(__dirname, '../uploads', avatar.name))
+      // let imagePath = await avatar.mv(
+      //   path.join(__dirname, 'uploads', avatar.name)
+      // )
+      // await userModel.updateOne(
+      //   {
+      //     userName,
+      //     userId,
+      //   },
+      //   {
+      //     // profilePicture: `http://localhost:3080/${avatar.name}`,
+      //     profilePicture: `http://3.6.156.104:3080/${avatar.name}`,
+      //   }
+      // )
+      res.json({
         status: true,
         message: 'File is uploaded',
         data: {
@@ -260,7 +295,10 @@ router.post('/upload-avatar', async (req, res) => {
       })
     }
   } catch (err) {
-    res.status(500).send(err)
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    })
   }
 })
 

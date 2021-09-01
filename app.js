@@ -16,7 +16,6 @@ var jsonParser = bodyParser.json()
 var urlencodedParser = bodyParser.urlencoded({ extended: false })
 
 var app = express()
-
 app.use(
   fileUpload({
     createParentPath: true,
@@ -34,7 +33,8 @@ app.set('view engine', 'jade')
 
 app.use(logger('dev'))
 app.use(express.json())
-app.use('/uploads', express.static('./uploads'))
+// app.use('/uploads', express.static('./uploads'))
+app.use('/uploads', express.static('public'))
 
 app.use(express.urlencoded({ extended: true }))
 // app.use(bodyParser.urlencoded({ extended: false }))
