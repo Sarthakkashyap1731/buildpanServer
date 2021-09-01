@@ -3,6 +3,8 @@ var router = express.Router()
 const shortid = require('shortid')
 var multer = require('multer')
 var uniqid = require('uniqid')
+var jwt = require('jsonwebtoken')
+let config = require('../config/config')
 
 const userModel = require('../models/userModel')
 
@@ -35,14 +37,14 @@ router.post('/signUp', async (req, res) => {
     console.log('resultresult ===', result)
     let newResult = userName + '_' + result
     let userData = await userModel.findOne({ email })
-    console.log('userDatauserData', userData)
+    // console.log('userDatauserData', userData)
     if (userData) {
-      res.json({
+      return res.json({
         success: false,
-        message: 'This email is used, Please use another',
+        message: 'User Already Exist. Please Login',
       })
     }
-    await userModel.create({
+    let user = await userModel.create({
       userId: newResult,
       email: email,
       profilePicture: profilePicture,
@@ -52,9 +54,32 @@ router.post('/signUp', async (req, res) => {
       winMatches: winMatches,
       looseMatches: looseMatches,
     })
-    res.json({ success: true, message: 'SignUp successfully' })
+    console.log('useruser ====', user)
+    //token
+
+    // create a token
+    var token = jwt.sign({ id: user._id }, config.secret, {
+      expiresIn: 86400, // expires in 24 hours
+    })
+    console.log('token', token)
+    res.json({ success: true, message: 'SignUp successfully', token: token })
   } catch (err) {
     res.json({ success: false, message: err.message })
+  }
+})
+
+router.post('/search/user', async (req, res) => {
+  console.log('Inside search user')
+  try {
+    let email = req.body.email
+    let userData = await userModel.findOne({ email: email })
+    console.log('userDatauserData', userData)
+    res.json({ success: true, message: 'User Fetched', data: userData })
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    })
   }
 })
 
@@ -67,6 +92,23 @@ router.post('/loginUser', async (req, res) => {
       let userData = await userModel.findOne({
         userName: userName,
         email: email,
+      })
+
+      //req.header token
+
+      var token = req.headers['x-access-token']
+      if (!token)
+        return res
+          .status(401)
+          .send({ auth: false, message: 'No token provided.' })
+
+      jwt.verify(token, config.secret, function (err, decoded) {
+        if (err)
+          return res
+            .status(500)
+            .send({ auth: false, message: 'Failed to authenticate token.' })
+        console.log('decodeddecoded', decoded)
+        res.status(200).send(decoded)
       })
       res.json({
         success: true,
@@ -232,6 +274,7 @@ router.post('/singup/guest', async (req, res) => {
       result += characters.charAt(Math.floor(Math.random() * charactersLength))
     }
     console.log('resultresult ===', result)
+    let header = req.headers
     console.log(req.headers)
     let newResult = 'Guest' + '_' + result
     console.log('newResultnewResult ===', newResult)
@@ -240,7 +283,7 @@ router.post('/singup/guest', async (req, res) => {
       userName: userName,
       userId: newResult,
     })
-    res.json({ success: true, message: 'SignUp successfully' })
+    res.json({ success: true, message: 'SignUp successfully', header: header })
   } catch (err) {
     res.json({ success: false, message: err.message })
   }
