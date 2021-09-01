@@ -274,16 +274,16 @@ router.post('/upload-avatar', async (req, res) => {
       // let imagePath = await avatar.mv(
       //   path.join(__dirname, 'uploads', avatar.name)
       // )
-      // await userModel.updateOne(
-      //   {
-      //     userName,
-      //     userId,
-      //   },
-      //   {
-      //     // profilePicture: `http://localhost:3080/${avatar.name}`,
-      //     profilePicture: `http://3.6.156.104:3080/${avatar.name}`,
-      //   }
-      // )
+      await userModel.updateOne(
+        {
+          userName,
+          userId,
+        },
+        {
+          // profilePicture: `http://localhost:3080/${avatar.name}`,
+          profilePicture: `http://3.6.156.104:3080/${avatar.name}`,
+        }
+      )
       res.json({
         status: true,
         message: 'File is uploaded',
